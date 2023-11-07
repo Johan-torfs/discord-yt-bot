@@ -11,7 +11,11 @@ const CLIENT_ID = process.env.CLIENT_ID;
 var started = false;
 
 export default function startBot() {
-    return 'test';
+    return {
+        token: TOKEN,
+        guildId: GUILD_ID,
+        clientId: CLIENT_ID,
+    };
     if (started) return;
     started = true;
 
