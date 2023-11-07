@@ -8,12 +8,7 @@ const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
 const CLIENT_ID = process.env.CLIENT_ID;
 
-var started = false;
-
 export default function startBot() {
-    if (started) return 'Bot already started';
-    started = true;
-
     // Create REST and WebSocket managers directly
     const rest = new REST({ version: '10' }).setToken(TOKEN);
 
@@ -34,5 +29,4 @@ export default function startBot() {
     startInteractionListener(client);
 
     client.login(TOKEN);
-    return 'Bot started';
 }
