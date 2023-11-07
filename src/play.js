@@ -22,7 +22,7 @@ export async function play(interaction) {
     await createPlayer();
     connection.subscribe(player);
 
-    interaction.reply({ content: 'Fetching your song!' });
+    interaction.deferReply({ ephemeral: true });
     const songInfo = await ytdl.getInfo(interaction.options.getString('link'));
     const embed = createEmbedMessage(songInfo.videoDetails);
     interaction.followUp({ embeds: [embed] });
@@ -85,7 +85,7 @@ async function createPlayer() {
     });
 
     player.on('error', error => {
-        console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
+        console.error(error);
         playNext();
     });
 }
