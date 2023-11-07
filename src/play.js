@@ -69,7 +69,7 @@ async function playNext(skip = true) {
 function createEmbedMessage(details) {
     return new EmbedBuilder()
         .setTitle(details.title)
-        .setDescription('Duration: ' + Math.floor(details.lengthSeconds / 60) + ':' + (details.lengthSeconds % 60))
+        .setDescription('Duration: ' + Math.floor(details.lengthSeconds / 60) + ':' + ('00' + details.lengthSeconds % 60).slice(-2))
         .setURL(details.video_url)
         .setThumbnail(details.thumbnails[0].url)
 }
