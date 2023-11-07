@@ -1,4 +1,4 @@
-import { Client, REST, Routes, SlashCommandBuilder, PermissionFlagsBits, GatewayIntentBits, EmbedBuilder, ChannelType } from 'discord.js';
+import { Client, REST, GatewayIntentBits } from 'discord.js';
 
 import { registerApplicationCommands, startInteractionListener } from './commands.js';
 
@@ -8,23 +8,30 @@ const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
 const CLIENT_ID = process.env.CLIENT_ID;
 
-// Create REST and WebSocket managers directly
-const rest = new REST({ version: '10' }).setToken(TOKEN);
+var started = false;
 
-// Create a client to emit relevant events.
-const client = new Client({ 
-    intents: [
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.GuildVoiceStates,
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.MessageContent,
-    ]
-});
+export default function startBot() {
+    if (started) return;
+    started = true;
 
-// Listen for the ready event
-client.once('ready', () => console.log('Ready!'));
+    // Create REST and WebSocket managers directly
+    const rest = new REST({ version: '10' }).setToken(TOKEN);
 
-registerApplicationCommands(rest, CLIENT_ID, GUILD_ID);
-startInteractionListener(client);
+    // Create a client to emit relevant events.
+    const client = new Client({ 
+        intents: [
+            GatewayIntentBits.GuildMessages,
+            GatewayIntentBits.GuildVoiceStates,
+            GatewayIntentBits.Guilds,
+            GatewayIntentBits.MessageContent,
+        ]
+    });
 
-client.login(TOKEN);
+    // Listen for the ready event
+    client.once('ready', () => console.log('Ready!'));
+
+    registerApplicationCommands(rest, CLIENT_ID, GUILD_ID);
+    startInteractionListener(client);
+
+    client.login(TOKEN);
+}
