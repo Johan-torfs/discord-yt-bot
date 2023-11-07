@@ -2,12 +2,12 @@ import { createAudioPlayer, getVoiceConnection, createAudioResource, AudioPlayer
 import { EmbedBuilder } from 'discord.js';
 import { joinChannel } from './join.js';
 
-import ytdl from 'ytdl-core';
+import play from 'play-dl';
 
 var player;
 var queueArray = [];
 
-export async function play(interaction) {
+export async function playCommand(interaction) {
     var connection = getVoiceConnection(interaction.guildId);
 
     if (!connection) {
@@ -22,17 +22,21 @@ export async function play(interaction) {
     await createPlayer();
     connection.subscribe(player);
 
-    interaction.deferReply({ ephemeral: true });
-    const songInfo = await ytdl.getInfo(interaction.options.getString('link'));
-    const embed = createEmbedMessage(songInfo.videoDetails);
+    interaction.deferReply();
+    const songInfo = await play.video_info(interaction.options.getString('link'));
+    const embed = createEmbedMessage(songInfo.video_details);
     interaction.followUp({ embeds: [embed] });
 
-    const audioResource = createAudioResource(ytdl.downloadFromInfo(songInfo, { filter: 'audioonly' }));
-    queueArray.push({ resource: audioResource, info: songInfo.videoDetails, embed: embed });
+    let stream = await play.stream_from_info(songInfo)
+    let resource = createAudioResource(stream.stream, {
+        inputType: stream.type
+    })
+
+    queueArray.push({ resource: resource, info: songInfo.video_details, embed: embed });
     if (player.state.status == AudioPlayerStatus.Idle) playNext(false);
 }
 
-export function skip(interaction) {
+export function skipCommand(interaction) {
     const connection = getVoiceConnection(interaction.guildId);
     if (!connection) {
         interaction.reply({ content: 'Not connected!' });
@@ -43,7 +47,7 @@ export function skip(interaction) {
     interaction.reply({ content: 'Skipped!' });
 }
 
-export async function stop(interaction) {
+export async function stopCommand(interaction) {
     const connection = getVoiceConnection(interaction.guildId);
     if (!connection) {
         interaction.reply({ content: 'Not connected!' });
@@ -69,8 +73,8 @@ async function playNext(skip = true) {
 function createEmbedMessage(details) {
     return new EmbedBuilder()
         .setTitle(details.title)
-        .setDescription('Duration: ' + Math.floor(details.lengthSeconds / 60) + ':' + ('00' + details.lengthSeconds % 60).slice(-2))
-        .setURL(details.video_url)
+        .setDescription('Duration: ' + details.durationRaw)
+        .setURL(details.url)
         .setThumbnail(details.thumbnails[0].url)
 }
 

@@ -1,8 +1,7 @@
 import { Routes } from 'discord.js';
 
-import {join} from './join.js';
-import {leave} from './leave.js';
-import {play, skip, stop} from './play.js';
+import {join, leave} from './join.js';
+import {playCommand, skipCommand, stopCommand} from './play.js';
 
 // JSON with available commands and their functions
 const commands = [
@@ -35,17 +34,17 @@ const commands = [
                 'required': true,
             }
         ],
-        'function': play,
+        'function': playCommand,
     },
     {
         'name': 'skip',
         'description': 'Skip the current song',
-        'function': skip,
+        'function': skipCommand,
     },
     {
         'name': 'stop',
         'description': 'Stop playing songs',
-        'function': stop,
+        'function': stopCommand,
     }
 ];
 
