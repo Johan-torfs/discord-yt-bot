@@ -11,12 +11,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
 var started = false;
 
 export default function startBot() {
-    return {
-        token: TOKEN,
-        guildId: GUILD_ID,
-        clientId: CLIENT_ID,
-    };
-    if (started) return;
+    if (started) return 'Bot already started';
     started = true;
 
     // Create REST and WebSocket managers directly
@@ -39,4 +34,5 @@ export default function startBot() {
     startInteractionListener(client);
 
     client.login(TOKEN);
+    return 'Bot started';
 }
