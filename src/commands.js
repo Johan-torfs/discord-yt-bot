@@ -1,7 +1,7 @@
 import { Routes, ChannelType, SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
 
 import {join, leave} from './join.js';
-import {playCommand, skipCommand, stopCommand, queueCommand, removeCommand} from './play.js';
+import {playCommand, skipCommand, stopCommand, queueCommand, removeCommand, replayCommand} from './play.js';
 
 // JSON with available commands and their functions
 const commands = [
@@ -77,6 +77,11 @@ const commands = [
         ).toJSON()),
         'function': removeCommand,
     },
+    {
+        name: 'replay',
+        type: 3,
+        'function': replayCommand,
+    },
 ];
 
 async function registerApplicationCommands(rest, clientId, guildId) {   
@@ -92,8 +97,6 @@ async function registerApplicationCommands(rest, clientId, guildId) {
 
 async function startInteractionListener(client) {
     client.on('interactionCreate', (interaction) => {
-        if (!interaction.isChatInputCommand()) return;
-
         const command = commands.find(command => command.name == interaction.commandName);
         if (command) command.function(interaction);
     });

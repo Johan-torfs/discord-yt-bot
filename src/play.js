@@ -13,7 +13,7 @@ export async function playCommand(interaction) {
 
     if (!connection) {
         if (!interaction.member.voice?.channel) {
-            interaction.reply({content: 'Not connected!' });
+            interaction.reply({content: 'Not connected!', ephemeral: true });
             return;
         } else {
             connection = joinChannel(interaction.member.voice?.channel);
@@ -33,25 +33,65 @@ export async function playCommand(interaction) {
         inputType: stream.type
     })
 
-    queueArray.push({ resource: resource, info: {...songInfo.video_details, id: ++nextId}, embed: embed });
+    queueArray.push({ resource: resource, info: {...songInfo.video_details, id: nextId++}, embed: embed });
+    if (player.state.status == AudioPlayerStatus.Idle) playNext(false);
+}
+
+export async function replayCommand(interaction) {
+    var connection = getVoiceConnection(interaction.guildId);
+
+    if (!connection) {
+        if (!interaction.member.voice?.channel) {
+            interaction.reply({content: 'Not connected!', ephemeral: true });
+            return;
+        } else {
+            connection = joinChannel(interaction.member.voice?.channel);
+        }
+    }
+
+    if (interaction.targetMessage.embeds.length == 0) {
+        interaction.reply({content: 'No song in this message!', ephemeral: true });
+        return;
+    }
+
+    const embed = interaction.targetMessage.embeds[0];
+    if (!embed.url) {
+        interaction.reply({content: 'No song in this message!', ephemeral: true });
+        return;
+    }
+
+    await createPlayer();
+    connection.subscribe(player);
+
+    interaction.deferReply();
+    const songInfo = await play.video_info(embed.url);
+    interaction.followUp({ embeds: [embed] });
+
+    let stream = await play.stream_from_info(songInfo)
+    let resource = createAudioResource(stream.stream, {
+        inputType: stream.type
+    })
+
+    queueArray.push({ resource: resource, info: {...songInfo.video_details, id: nextId++}, embed: embed });
     if (player.state.status == AudioPlayerStatus.Idle) playNext(false);
 }
 
 export function skipCommand(interaction) {
     const connection = getVoiceConnection(interaction.guildId);
     if (!connection) {
-        interaction.reply({ content: 'Not connected!' });
+        interaction.reply({ content: 'Not connected!', ephemeral: true });
         return;
     };
 
+    const title = queueArray[0].info.title;
     playNext();
-    interaction.reply({ content: 'Skipped!' });
+    interaction.reply({ content: 'Skipped ' + title + '!' });
 }
 
 export async function stopCommand(interaction) {
     const connection = getVoiceConnection(interaction.guildId);
     if (!connection) {
-        interaction.reply({ content: 'Not connected!' });
+        interaction.reply({ content: 'Not connected!', ephemeral: true });
         return;
     };
 
@@ -63,29 +103,34 @@ export async function stopCommand(interaction) {
 export async function queueCommand(interaction) {
     const connection = getVoiceConnection(interaction.guildId);
     if (!connection) {
-        interaction.reply({ content: 'Not connected!' });
+        interaction.reply({ content: 'Not connected!', ephemeral: true });
         return;
     };
-    
-    interaction.reply({ content: 'Queue: ' + queueArray.map((item) => item.info.id + '. ' + item.info.title).join('\n') });
+
+    interaction.reply({ content: queueArray.map((item, index) => (
+        index == 0 
+        ? '**Now Playing:** ' + item.info.title
+        : item.info.id + ': ' + item.info.title
+    )).join('\n') });
 }
 
 export async function removeCommand(interaction) {
     const connection = getVoiceConnection(interaction.guildId);
     if (!connection) {
-        interaction.reply({ content: 'Not connected!' });
+        interaction.reply({ content: 'Not connected!', ephemeral: true });
         return;
     };
 
     const id = interaction.options.getInteger('id');
     const index = queueArray.findIndex((item) => item.info.id == id);
     if (index == -1) {
-        interaction.reply({ content: 'Not found!' });
+        interaction.reply({ content: 'Not found!', ephemeral: true });
         return;
     }
 
+    const title = queueArray[index].info.title;
     queueArray.splice(index, 1);
-    interaction.reply({ content: 'Removed!' });
+    interaction.reply({ content: 'Removed ' + title + '!' });
 }
 
 async function playNext(skip = true) {
