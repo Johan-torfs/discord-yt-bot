@@ -58,7 +58,7 @@ const commands = [
     },
     {
         ...(new SlashCommandBuilder()
-        .setName('show')
+        .setName('queue')
         .setDescription('Show all songs in queue')
         .setDefaultMemberPermissions(PermissionFlagsBits.Connect)
         .toJSON()),
