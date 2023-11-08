@@ -6,6 +6,7 @@ import play from 'play-dl';
 
 var player;
 var queueArray = [];
+var nextId = 1;
 
 export async function playCommand(interaction) {
     var connection = getVoiceConnection(interaction.guildId);
@@ -32,7 +33,7 @@ export async function playCommand(interaction) {
         inputType: stream.type
     })
 
-    queueArray.push({ resource: resource, info: songInfo.video_details, embed: embed });
+    queueArray.push({ resource: resource, info: {...songInfo.video_details, id: ++nextId}, embed: embed });
     if (player.state.status == AudioPlayerStatus.Idle) playNext(false);
 }
 
@@ -57,6 +58,34 @@ export async function stopCommand(interaction) {
     player.stop();
     queueArray = [];
     interaction.reply({ content: 'Stopped!' });
+}
+
+export async function queueCommand(interaction) {
+    const connection = getVoiceConnection(interaction.guildId);
+    if (!connection) {
+        interaction.reply({ content: 'Not connected!' });
+        return;
+    };
+    
+    interaction.reply({ content: 'Queue: ' + queueArray.map((item) => item.info.id + '. ' + item.info.title).join('\n') });
+}
+
+export async function removeCommand(interaction) {
+    const connection = getVoiceConnection(interaction.guildId);
+    if (!connection) {
+        interaction.reply({ content: 'Not connected!' });
+        return;
+    };
+
+    const id = interaction.options.getInteger('id');
+    const index = queueArray.findIndex((item) => item.info.id == id);
+    if (index == -1) {
+        interaction.reply({ content: 'Not found!' });
+        return;
+    }
+
+    queueArray.splice(index, 1);
+    interaction.reply({ content: 'Removed!' });
 }
 
 async function playNext(skip = true) {

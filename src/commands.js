@@ -1,51 +1,82 @@
-import { Routes } from 'discord.js';
+import { Routes, ChannelType, SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
 
 import {join, leave} from './join.js';
-import {playCommand, skipCommand, stopCommand} from './play.js';
+import {playCommand, skipCommand, stopCommand, queueCommand, removeCommand} from './play.js';
 
 // JSON with available commands and their functions
 const commands = [
     {
-        'name': 'join',
-        'description': 'Join your voice channel',
-        'options': [
-            {
-                'name': 'channel',
-                'type': 7,
-                'description': 'The channel to join',
-                'required': true,
-            }
-        ],
-        'function': join,
+            ...(new SlashCommandBuilder()
+            .setName('join')
+            .setDescription('Join a voice channel')
+            .setDefaultMemberPermissions(PermissionFlagsBits.Connect)
+            .addChannelOption((option) => 
+                option
+                    .setName('channel')
+                    .setDescription('The channel to join')
+                    .setRequired(true)
+                    .addChannelTypes(ChannelType.GuildVoice)
+            ).toJSON()),
+            'function': join,
     },
     {
-        'name': 'leave',
-        'description': 'Leave your voice channel',
+        ...(new SlashCommandBuilder()
+        .setName('leave')
+        .setDescription('Leave the voice channel')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Connect)
+        .toJSON()),
         'function': leave,
     },
     {
-        'name': 'play',
-        'description': 'Play a song',
-        'options': [
-            {
-                'name': 'link',
-                'type': 3,
-                'description': 'The song to play',
-                'required': true,
-            }
-        ],
+        ...(new SlashCommandBuilder()
+        .setName('play')
+        .setDescription('Play a youtube song')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Connect)
+        .addStringOption((option) =>
+            option
+                .setName('link')
+                .setDescription('The song to play')
+                .setRequired(true)
+        ).toJSON()),
         'function': playCommand,
     },
     {
-        'name': 'skip',
-        'description': 'Skip the current song',
+        ...(new SlashCommandBuilder()
+        .setName('skip')
+        .setDescription('Skip the current song')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Connect)
+        .toJSON()),
         'function': skipCommand,
     },
     {
-        'name': 'stop',
-        'description': 'Stop playing songs',
+        ...(new SlashCommandBuilder()
+        .setName('stop')
+        .setDescription('Stop all songs and empty queue')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Connect)
+        .toJSON()),
         'function': stopCommand,
-    }
+    },
+    {
+        ...(new SlashCommandBuilder()
+        .setName('showQueue')
+        .setDescription('Show all songs in queue')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Connect)
+        .toJSON()),
+        'function': queueCommand,
+    },
+    {
+        ...(new SlashCommandBuilder()
+        .setName('remove')
+        .setDescription('Remove a song from the queue')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Connect)
+        .addIntegerOption((option) =>
+            option
+                .setName('id')
+                .setDescription('The number of the song to remove')
+                .setRequired(true)
+        ).toJSON()),
+        'function': removeCommand,
+    },
 ];
 
 async function registerApplicationCommands(rest, clientId, guildId) {   
