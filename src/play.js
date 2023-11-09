@@ -64,7 +64,7 @@ export async function replayCommand(interaction) {
     connection.subscribe(player);
 
     try {
-        interaction.targetMessage.followUp({ embeds: [embed] });
+        interaction.reply({ embeds: [embed] });
     } catch (error) {
         //ingore the error and just play the song
         console.error(error);
