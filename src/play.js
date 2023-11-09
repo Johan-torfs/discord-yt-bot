@@ -63,7 +63,11 @@ export async function replayCommand(interaction) {
     await createPlayer();
     connection.subscribe(player);
 
-    interaction.reply({ embeds: [embed] });
+    try {
+        interaction.reply({ embeds: [embed] });
+    } catch (error) {
+        //ingore the error and just play the song
+    }
     const songInfo = await play.video_info(embed.url);
 
     let stream = await play.stream_from_info(songInfo)
