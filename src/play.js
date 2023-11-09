@@ -26,7 +26,7 @@ export async function playCommand(interaction) {
     interaction.deferReply();
     const songInfo = await play.video_info(interaction.options.getString('link'));
     const embed = createEmbedMessage(songInfo.video_details);
-    interaction.followUp({ embeds: [embed] });
+    interaction.reply({ embeds: [embed] });
 
     let stream = await play.stream_from_info(songInfo)
     let resource = createAudioResource(stream.stream, {
@@ -65,7 +65,7 @@ export async function replayCommand(interaction) {
 
     interaction.deferReply();
     const songInfo = await play.video_info(embed.url);
-    interaction.followUp({ embeds: [embed] });
+    interaction.reply({ embeds: [embed] });
 
     let stream = await play.stream_from_info(songInfo)
     let resource = createAudioResource(stream.stream, {
