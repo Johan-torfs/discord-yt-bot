@@ -67,6 +67,7 @@ export async function replayCommand(interaction) {
         interaction.reply({ embeds: [embed] });
     } catch (error) {
         //ingore the error and just play the song
+        console.error(error);
     }
     const songInfo = await play.video_info(embed.url);
 
