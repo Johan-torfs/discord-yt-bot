@@ -63,7 +63,6 @@ export async function replayCommand(interaction) {
     await createPlayer();
     connection.subscribe(player);
 
-    interaction.deferReply();
     interaction.reply({ embeds: [embed] });
     const songInfo = await play.video_info(embed.url);
 
