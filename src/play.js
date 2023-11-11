@@ -26,6 +26,7 @@ export async function playCommand(interaction) {
     interaction.deferReply();
     const songInfo = await play.video_info(interaction.options.getString('link'));
     const embed = createEmbedMessage(songInfo.video_details);
+    await new Promise(resolve => setTimeout(resolve, 1000));
     interaction.followUp({ embeds: [embed] });
 
     let stream = await play.stream_from_info(songInfo)
