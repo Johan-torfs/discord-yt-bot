@@ -38,6 +38,36 @@ export async function playCommand(interaction) {
     if (player.state.status == AudioPlayerStatus.Idle) playNext(false);
 }
 
+export async function buildCommand(interaction) {
+    var connection = getVoiceConnection(interaction.guildId);
+
+    if (!connection) {
+        if (!interaction.member.voice?.channel) {
+            interaction.reply({content: 'Not connected!', ephemeral: true });
+            return;
+        } else {
+            connection = joinChannel(interaction.member.voice?.channel);
+        }
+    }
+
+    await createPlayer();
+    connection.subscribe(player);
+
+    interaction.deferReply();
+    const songInfo = await play.video_info('https://youtu.be/j8068ZrwicQ?si=R55xb5vqzLyigdZL');
+    const embed = createEmbedMessage(songInfo.video_details);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    interaction.followUp({ embeds: [embed] });
+
+    let stream = await play.stream_from_info(songInfo)
+    let resource = createAudioResource(stream.stream, {
+        inputType: stream.type
+    })
+
+    queueArray.push({ resource: resource, info: {...songInfo.video_details, id: nextId++}, embed: embed });
+    if (player.state.status == AudioPlayerStatus.Idle) playNext(false);
+}
+
 export async function replayCommand(interaction) {
     var connection = getVoiceConnection(interaction.guildId);
 

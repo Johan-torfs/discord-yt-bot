@@ -1,7 +1,7 @@
 import { Routes, ChannelType, SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
 
 import {join, leave} from './join.js';
-import {playCommand, skipCommand, stopCommand, queueCommand, removeCommand, replayCommand} from './play.js';
+import {playCommand, skipCommand, stopCommand, queueCommand, removeCommand, replayCommand, buildCommand} from './play.js';
 
 // JSON with available commands and their functions
 const commands = [
@@ -81,6 +81,14 @@ const commands = [
         name: 'replay',
         type: 3,
         'function': replayCommand,
+    },
+    {
+        ...(new SlashCommandBuilder()
+        .setName('build')
+        .setDescription('Play a very specific song!')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Connect)
+        .toJSON()),
+        'function': buildCommand,
     },
 ];
 
