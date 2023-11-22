@@ -15,6 +15,11 @@ export class Interaction {
             try {
                 await interaction.reply({ content: 'Something went wrong!', ephemeral: true });
             } catch (error) {
+                if (error.code = 40060) {
+                    console.log('Interaction has already been acknowledged.');
+                    this.replied = true;
+                    return;
+                }
                 console.log(error);
             }
             return;
