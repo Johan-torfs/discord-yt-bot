@@ -39,11 +39,16 @@ export class Interaction {
     
     async interactionReply(interaction, options = {}) {
         if (!this.firstInteractionDefer) await new Promise(resolve => setTimeout(resolve, 500));
-        
+
         if (this.replyCount > 5) {
             try {
                 await interaction.reply({ content: 'Something went wrong!', ephemeral: true });
             } catch (error) {
+                if (error.code = 40060) {
+                    console.log('Interaction has already been acknowledged.');
+                    this.replied = true;
+                    return;
+                }
                 console.log(error);
             }
             return;
