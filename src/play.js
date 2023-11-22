@@ -25,11 +25,15 @@ export async function playCommand(interaction) {
         inputType: stream.type
     })
 
-    queueArray.push({ resource: resource, info: {...songInfo.video_details, id: nextId++}, embed: embed });
+    queueArray = [
+        ...queueArray.slice(0, 1),
+        { resource: resource, info: {...songInfo.video_details, id: nextId++}, embed: embed },
+        ...queueArray.slice(1)
+    ]
     if (player.state.status == AudioPlayerStatus.Idle) playNext(false);
 }
 
-export async function buildCommand(interaction) {
+export async function insertCommand(interaction) {
     const interactionHandler = new Interaction(interaction);
     const connection = checkVoiceChannelAndJoin(interactionHandler, interaction);
     if (!connection) return;
@@ -37,7 +41,26 @@ export async function buildCommand(interaction) {
     await createPlayer();
     connection.subscribe(player);
 
-    const { songInfo, embed } = await getSongInfoAndReply(interaction, 'https://youtu.be/j8068ZrwicQ?si=R55xb5vqzLyigdZL');
+    const { songInfo, embed } = await getSongInfoAndReply(interactionHandler, interaction, interaction.options.getString('link'));
+
+    let stream = await play.stream_from_info(songInfo)
+    let resource = createAudioResource(stream.stream, {
+        inputType: stream.type
+    })
+
+    queueArray.push({ resource: resource, info: {...songInfo.video_details, id: nextId++}, embed: embed });
+    if (player.state.status == AudioPlayerStatus.Idle) playNext(false);
+}
+
+export async function customSongCommand(interaction, link) {
+    const interactionHandler = new Interaction(interaction);
+    const connection = checkVoiceChannelAndJoin(interactionHandler, interaction);
+    if (!connection) return;
+
+    await createPlayer();
+    connection.subscribe(player);
+
+    const { songInfo, embed } = await getSongInfoAndReply(interactionHandler, interaction, link); //'https://youtu.be/j8068ZrwicQ?si=R55xb5vqzLyigdZL'
 
     let stream = await play.stream_from_info(songInfo)
     let resource = createAudioResource(stream.stream, {
@@ -71,7 +94,7 @@ export async function replayCommand(interaction) {
     await createPlayer();
     connection.subscribe(player);
 
-    const { songInfo } = await getSongInfoAndReply(interaction, embed.url);
+    const { songInfo } = await getSongInfoAndReply(interactionHandler, interaction, embed.url);
 
     let stream = await play.stream_from_info(songInfo)
     let resource = createAudioResource(stream.stream, {
@@ -84,7 +107,7 @@ export async function replayCommand(interaction) {
 
 export function skipCommand(interaction) {
     const interactionHandler = new Interaction(interaction);
-    if (checkConnention(interactionHandler, interaction)) return;
+    if (!checkConnention(interactionHandler, interaction)) return;
 
     const title = queueArray[0].info.title;
     playNext();
@@ -93,7 +116,7 @@ export function skipCommand(interaction) {
 
 export async function stopCommand(interaction) {
     const interactionHandler = new Interaction(interaction);
-    if (checkConnention(interactionHandler, interaction)) return;
+    if (!checkConnention(interactionHandler, interaction)) return;
 
     player.stop();
     queueArray = [];
@@ -102,7 +125,7 @@ export async function stopCommand(interaction) {
 
 export async function queueCommand(interaction) {
     const interactionHandler = new Interaction(interaction);
-    if (checkConnention(interactionHandler, interaction)) return;
+    if (!checkConnention(interactionHandler, interaction)) return;
 
     interactionHandler.interactionReply(interaction, { content: queueArray.map((item, index) => (
         index == 0 
@@ -113,7 +136,7 @@ export async function queueCommand(interaction) {
 
 export async function removeCommand(interaction) {
     const interactionHandler = new Interaction(interaction);
-    if (checkConnention(interactionHandler, interaction)) return;
+    if (!checkConnention(interactionHandler, interaction)) return;
 
     const id = interaction.options.getInteger('id');
     const index = queueArray.findIndex((item) => item.info.id == id);
@@ -165,7 +188,7 @@ async function createPlayer() {
 }
 
 function checkVoiceChannelAndJoin(interactionHandler, interaction) {
-    const connection = getVoiceConnection(interaction.guildId);
+    var connection = getVoiceConnection(interaction.guildId);
 
     if (!connection) {
         if (!interaction.member.voice?.channel) {
@@ -176,18 +199,18 @@ function checkVoiceChannelAndJoin(interactionHandler, interaction) {
         }
     }
 
-    return true;
+    return connection;
 }
 
 function checkConnention(interactionHandler, interaction) {
-    const connection = getVoiceConnection(interaction.guildId);
+    var connection = getVoiceConnection(interaction.guildId);
 
     if (!connection) {
         interactionHandler.interactionReply(interaction, {content: 'Not connected!', ephemeral: true });
         return false;
     }
 
-    return true;
+    return connection;
 }
 
 async function getSongInfoAndReply(interactionHandler, interaction, link) {

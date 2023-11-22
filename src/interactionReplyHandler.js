@@ -5,7 +5,8 @@ export class Interaction {
         this.replied = false;
         this.replyCount = 0;
         this.interaction = interaction;
-        interactionDefer(interaction);
+        this.firstInteractionDefer = false;
+        this.interactionDefer(interaction);
     }
 
     async interactionDefer(interaction, options = {}) {
@@ -18,18 +19,27 @@ export class Interaction {
             }
             return;
         }
+        this.deferCount++;
 
         try {
             await interaction.deferReply(options);
             this.deferred = true;
         } catch (error) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            await interactionDefer(interaction, options);
+            if (error.code = 'InteractionAlreadyReplied') {
+                console.log('Interaction already replied or deferred!');
+                this.deferred = true;
+                return;
+            }
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await this.interactionDefer(interaction, options);
         }
-        this.deferCount++;
+
+        this.firstInteractionDefer = true;
     }
     
     async interactionReply(interaction, options = {}) {
+        if (!this.firstInteractionDefer) await new Promise(resolve => setTimeout(resolve, 500));
+        
         if (this.replyCount > 5) {
             try {
                 await interaction.reply({ content: 'Something went wrong!', ephemeral: true });
@@ -38,6 +48,7 @@ export class Interaction {
             }
             return;
         }
+        this.replyCount++;
 
         if (this.deferred) {
             try {
@@ -45,12 +56,11 @@ export class Interaction {
                 this.replied = true;
             } catch (error) {
                 await new Promise(resolve => setTimeout(resolve, 1000));
-                await interactionReply(interaction, options);
+                await this.interactionReply(interaction, options);
             }
         } else {
-            await interactionDefer(interaction, options);
-            await interactionReply(interaction, options);
+            await this.interactionDefer(interaction, options);
+            await this.interactionReply(interaction, options);
         }
-        this.replyCount++;
     }
 }
