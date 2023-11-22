@@ -64,8 +64,12 @@ export async function buildCommand(interaction) {
         inputType: stream.type
     })
 
-    queueArray.push({ resource: resource, info: {...songInfo.video_details, id: nextId++}, embed: embed });
-    if (player.state.status == AudioPlayerStatus.Idle) playNext(false);
+    queueArray = [
+        ...queueArray.slice(0, 1),
+        { resource: resource, info: {...songInfo.video_details, id: nextId++}, embed: embed },
+        ...queueArray.slice(1)
+    ] 
+    playNext(player.state.status != AudioPlayerStatus.Idle);
 }
 
 export async function replayCommand(interaction) {
