@@ -1,6 +1,7 @@
-import { getVoiceConnection, joinVoiceChannel } from "@discordjs/voice";
+import { getVoiceConnection, joinVoiceChannel, VoiceConnectionStatus } from "@discordjs/voice";
 
 var activeChannel;
+var active = false;
 
 var getConnection = () => {
     if (!activeChannel) return null;
@@ -15,11 +16,7 @@ function joinChannel(channel) {
         adapterCreator: channel.guild.voiceAdapterCreator,
     });
 
-    connection.on(VoiceConnectionStatus.Ready, () => {
-        setTimeout(() => {
-            if (!activeChannel) connection.destroy();
-        }, 1000 * 60 * 5);
-    });
+    connection.on(VoiceConnectionStatus.Ready, startTimeout);
 
     connection.on(VoiceConnectionStatus.Disconnected, async (oldState, newState) => {
         try {
@@ -30,11 +27,30 @@ function joinChannel(channel) {
         } catch (error) {
             connection.destroy();
             activeChannel = null;
+            active = false;
         }
     });
 
     activeChannel = channel;
     return {reply: {content: 'Connected!'}, success: true };
+}
+
+function startTimeout() {
+    setTimeout(() => {
+        if (!active) {
+            setTimeout(() => {
+                if (!active) {
+                    getConnection().destroy();
+                    activeChannel = null;
+                    active = false;
+                } else {
+                    startTimeout();
+                }
+            }, 1000 * 20);
+        } else {
+            startTimeout();
+        }
+    }, 1000 * 20);
 }
 
 async function checkAndJoin(channel) {
@@ -52,7 +68,16 @@ function leave() {
 
     getConnection().destroy();
     activeChannel = null;
+    active = false;
     return {reply: {content: 'Left!' }};
+}
+
+function activate() {
+    active = true;
+}
+
+function deactivate() {
+    active = false;
 }
 
 const ChannelController = {
@@ -60,6 +85,8 @@ const ChannelController = {
     joinChannel,
     leave,
     getConnection,
+    activate,
+    deactivate,
 }
 
 export default ChannelController;

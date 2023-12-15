@@ -13,6 +13,7 @@ async function start(rest, clientId, guildId) {
     commands = [...baseCommands];
 
     await registerApplicationCommands();
+    console.log('Started commands controller.');
 }
 
 async function registerApplicationCommands() {   
@@ -40,6 +41,7 @@ function setCommands(newCommands) {
 
 const CommandsController = {
     start,
+    registerApplicationCommands,
     getCommands,
     setCommands,
 };

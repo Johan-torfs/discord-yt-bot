@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
-import { insert } from './insert.js';
+import { build } from './build.js';
 import CommandsController from '../CommandsController.js';
 
 export async function addCommand(commandName, songLink) {
@@ -18,11 +18,11 @@ export async function addCommand(commandName, songLink) {
         .setDescription('Play a very specific song!')
         .setDefaultMemberPermissions(PermissionFlagsBits.Connect)
         .toJSON()),
-        'function': (interaction) => insert(interaction.member.voice?.channel, songLink),
+        'function': (interaction) => build(interaction.member.voice?.channel, songLink),
     }
 
     CommandsController.getCommands().push(command);
-    if (! (await registerApplicationCommands())) {
+    if (! (await CommandsController.registerApplicationCommands())) {
         CommandsController.getCommands().pop();
         return {content: 'Failed to add command ' + commandName + '!', ephemeral: true };
     }

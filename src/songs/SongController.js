@@ -8,17 +8,17 @@ var player;
 var queueArray = [];
 var nextId = 1;
 
-function play(songLink, insert = false) {
+async function play(songLink, insert = false, skip = false) {
     createPlayer();
     
-    const { result, success } = getSongInfo(songLink);
+    const { result, success } = await getSongInfo(songLink);
     if (!success) return result;
 
     const { songInfo, embed } = result;
 
     let stream;
     try {
-        stream = playdl.stream_from_info(songInfo);
+        stream = await playdl.stream_from_info(songInfo);
     } catch (error) {
         if (error.code = 429) return {reply: { content: 'Too many requests!' }, success: false };
         return {reply: { content: 'Song request failed!', ephemeral: true }, success: false };
@@ -38,7 +38,11 @@ function play(songLink, insert = false) {
         queueArray.push({ resource: resource, info: {...songInfo.video_details, id: nextId++}, embed: embed });
     }
 
-    if (player.state.status == AudioPlayerStatus.Idle) playNext(false);
+    if (player.state.status == AudioPlayerStatus.Idle){
+        playNext(false)
+    } else if (skip) {
+        playNext(true);
+    }
 
     return {reply: { embeds: [embed] }, success: true };
 }
@@ -83,8 +87,10 @@ async function playNext(skip = true) {
     if (queueArray.length > 0) {
         const next = queueArray[0];
         player.play(next.resource);
+        ChannelController.activate();
     } else {
         player.stop();
+        ChannelController.deactivate();
     }
 }
 

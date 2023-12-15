@@ -13,6 +13,7 @@ export async function start(client) {
     startFollowUpProcessing();
     startInteractionProcessing();
     startDeferProcessing();
+    console.log('Started interaction controller.');
 }
 
 async function startInteractionListener() {
@@ -22,12 +23,13 @@ async function startInteractionListener() {
         if (!command) interactionReply(interaction, {content: 'This command does not exist!', ephemeral: true });
 
         deferQueue.push({interaction, command, count: 0});
+        console.log('Received interaction ' + interaction.commandName);
     });
 }
 
 async function startDeferProcessing() {
-    while (deferQueue.length > 1) await processDefer();
-    setTimeout(startDeferProcessing, 500);
+    while (deferQueue.length >= 1) await processDefer();
+    setTimeout(startDeferProcessing, 100);
 }
 
 async function processDefer() {
@@ -40,6 +42,8 @@ async function processDefer() {
             return;
         }
         deferQueue.push({interaction, command, count: count + 1});
+    } else {
+        commandQueue.push({interaction, command});
     }
 }
 
@@ -57,8 +61,8 @@ async function interactionDefer(interaction, options = {}) {
 }
 
 async function startInteractionProcessing() {
-    while (commandQueue.length > 1) await processInteraction();
-    setTimeout(startInteractionProcessing, 1000);
+    while (commandQueue.length >= 1) await processInteraction();
+    setTimeout(startInteractionProcessing, 100);
 }
 
 async function processInteraction() {
@@ -68,8 +72,8 @@ async function processInteraction() {
 }
 
 async function startFollowUpProcessing() {
-    while (followUpQueue.length > 1) await processFollowUp();
-    setTimeout(startFollowUpProcessing, 500);
+    while (followUpQueue.length >= 1) await processFollowUp();
+    setTimeout(startFollowUpProcessing, 100);
 }
 
 async function processFollowUp() {

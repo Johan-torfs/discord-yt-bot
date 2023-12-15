@@ -13,7 +13,7 @@ export async function removeCommand(commandName) {
 
     CommandsController.setCommands(CommandsController.getCommands().filter(command => command.name != commandName));
 
-    if (! (await registerApplicationCommands())) {
+    if (! (await CommandsController.registerApplicationCommands())) {
         CommandsController.getCommands().push(command);
         return {content: 'Failed to remove command ' + commandName + '!', ephemeral: true };
     }
