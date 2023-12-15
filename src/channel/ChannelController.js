@@ -36,23 +36,23 @@ function joinChannel(channel) {
 }
 
 function startTimeout() {
-    setTimeout(() => {
-        if (!active) {
-            setTimeout(() => {
-                if (!active) {
-                    if (getConnection()) {
-                        getConnection().destroy();
-                    }
-                    activeChannel = null;
-                    active = false;
-                } else {
-                    startTimeout();
-                }
-            }, 1000 * 60 * 5);
-        } else {
-            startTimeout();
-        }
-    }, 1000 * 20);
+    // setTimeout(() => {
+    //     if (!active) {
+    //         setTimeout(() => {
+    //             if (!active) {
+    //                 if (getConnection()) {
+    //                     getConnection().destroy();
+    //                 }
+    //                 activeChannel = null;
+    //                 active = false;
+    //             } else {
+    //                 startTimeout();
+    //             }
+    //         }, 1000 * 60 * 5);
+    //     } else {
+    //         startTimeout();
+    //     }
+    // }, 1000 * 20);
 }
 
 async function checkAndJoin(channel) {
