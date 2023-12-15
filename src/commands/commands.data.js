@@ -12,41 +12,41 @@ import { queue } from './functions/queue.js';
 import { remove } from './functions/remove.js';
 import { replay } from './functions/replay.js';
 
-export const commands = [
-    {
-        ...(new SlashCommandBuilder()
-        .setName('addcommand')
-        .setDescription('Add a command to play a specific song')
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-        .addStringOption((option) =>
-            option
-                .setName('command')
-                .setDescription('Name of the command')
-                .setRequired(true)
-        )
-        .addStringOption((option) =>
-            option
-                .setName('link')
-                .setDescription('Link to the song')
-                .setRequired(true)
-        ).toJSON()),
-        'function': (interaction) => addCommand(interaction.options.getString('command'), interaction.options.getString('link')),
-        ephermeral: true,
-    },
-    {
-        ...(new SlashCommandBuilder()
-        .setName('removecommand')
-        .setDescription('Remove a command')
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-        .addStringOption((option) =>
-            option
-                .setName('command')
-                .setDescription('Name of the command')
-                .setRequired(true)
-        ).toJSON()),
-        'function': (interaction) => removeCommand(interaction.options.getString('command')),
-        ephermeral: true,
-    },
+export const baseCommands = [
+    // {
+    //     ...(new SlashCommandBuilder()
+    //     .setName('addcommand')
+    //     .setDescription('Add a command to play a specific song')
+    //     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    //     .addStringOption((option) =>
+    //         option
+    //             .setName('command')
+    //             .setDescription('Name of the command')
+    //             .setRequired(true)
+    //     )
+    //     .addStringOption((option) =>
+    //         option
+    //             .setName('link')
+    //             .setDescription('Link to the song')
+    //             .setRequired(true)
+    //     ).toJSON()),
+    //     'function': (interaction) => addCommand(interaction.options.getString('command'), interaction.options.getString('link')),
+    //     ephermeral: true,
+    // },
+    // {
+    //     ...(new SlashCommandBuilder()
+    //     .setName('removecommand')
+    //     .setDescription('Remove a command')
+    //     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    //     .addStringOption((option) =>
+    //         option
+    //             .setName('command')
+    //             .setDescription('Name of the command')
+    //             .setRequired(true)
+    //     ).toJSON()),
+    //     'function': (interaction) => removeCommand(interaction.options.getString('command')),
+    //     ephermeral: true,
+    // },
     {
             ...(new SlashCommandBuilder()
             .setName('join')

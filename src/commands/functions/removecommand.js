@@ -1,8 +1,8 @@
 import CommandsController from '../CommandsController.js';
-import { commands } from '../commands.data.js';
+import { baseCommands } from '../commands.data.js';
 
 export async function removeCommand(commandName) {
-    if (commands.find(command => command.name == commandName)) {
+    if (baseCommands.find(command => command.name == commandName)) {
         return {content: 'This command is not removable!', ephemeral: true };
     }
 

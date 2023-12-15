@@ -55,9 +55,11 @@ function leave() {
     return {reply: {content: 'Left!' }};
 }
 
-export default ChannelController = {
+const ChannelController = {
     checkAndJoin,
     joinChannel,
     leave,
     getConnection,
 }
+
+export default ChannelController;

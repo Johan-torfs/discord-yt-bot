@@ -10,9 +10,20 @@ var nextId = 1;
 
 function play(songLink, insert = false) {
     createPlayer();
-    const { songInfo, embed } = getSongInfo(songLink);
+    
+    const { result, success } = getSongInfo(songLink);
+    if (!success) return result;
 
-    let stream = playdl.stream_from_info(songInfo)
+    const { songInfo, embed } = result;
+
+    let stream;
+    try {
+        stream = playdl.stream_from_info(songInfo);
+    } catch (error) {
+        if (error.code = 429) return {reply: { content: 'Too many requests!' }, success: false };
+        return {reply: { content: 'Song request failed!', ephemeral: true }, success: false };
+    }
+
     let resource = createAudioResource(stream.stream, {
         inputType: stream.type
     })
@@ -104,16 +115,23 @@ function createPlayer() {
 }
 
 async function getSongInfo(link) {
-    const songInfo = await play.video_info(link);
+    var songInfo;
+    try {
+        songInfo = await playdl.video_info(link);
+    } catch (error) {
+        return {result: { content: 'Failed to get link!', ephemeral: true }, success: false};
+    }
     const embed = createEmbedMessage(songInfo.video_details);
 
-    return { songInfo, embed };
+    return {result: { songInfo, embed }, success: true};
 }
 
-export default SongController = {
+const SongController = {
     play,
     skip,
     stop,
     showQueue,
     remove
-}
+};
+
+export default SongController;

@@ -37,8 +37,11 @@ function setCommands(newCommands) {
     commands = newCommands;
 }
 
-export default CommandsController = {
+
+const CommandsController = {
     start,
     getCommands,
     setCommands,
 };
+
+export default CommandsController;

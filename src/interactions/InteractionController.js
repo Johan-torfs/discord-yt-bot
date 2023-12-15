@@ -110,6 +110,8 @@ async function interactionReply(interaction, options = {}) {
     }
 }
 
-export default InteractionController = {
+const InteractionController = {
     start,
-}
+};
+
+export default InteractionController;
