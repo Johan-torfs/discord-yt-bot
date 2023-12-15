@@ -1,17 +1,20 @@
+import CommandsController from '../CommandsController.js';
+import { commands } from '../commands.data.js';
+
 export async function removeCommand(commandName) {
-    if (baseCommands.find(command => command.name == commandName)) {
+    if (commands.find(command => command.name == commandName)) {
         return {content: 'This command is not removable!', ephemeral: true };
     }
 
-    const command = commands.find(command => command.name == commandName);
+    const command = CommandsController.getCommands().find(command => command.name == commandName);
     if (!command) {
         return {content: 'This command does not exist!', ephemeral: true };
     }
 
-    commands = commands.filter(command => command.name != commandName);
+    CommandsController.setCommands(CommandsController.getCommands().filter(command => command.name != commandName));
 
     if (! (await registerApplicationCommands())) {
-        commands.push(command);
+        CommandsController.getCommands().push(command);
         return {content: 'Failed to remove command ' + commandName + '!', ephemeral: true };
     }
 

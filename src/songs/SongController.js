@@ -1,4 +1,4 @@
-import { createAudioPlayer, getVoiceConnection, createAudioResource, AudioPlayerStatus } from '@discordjs/voice';
+import { createAudioPlayer, createAudioResource, AudioPlayerStatus } from '@discordjs/voice';
 import { EmbedBuilder } from 'discord.js';
 
 import playdl from 'play-dl';

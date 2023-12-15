@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
 import { insert } from './insert.js';
+import CommandsController from '../CommandsController.js';
 
 export async function addCommand(commandName, songLink) {
     const regex = new RegExp('^[a-z]+$');
@@ -7,7 +8,7 @@ export async function addCommand(commandName, songLink) {
         return {content: 'Command name must only contain lowercase letters!', ephemeral: true };
     }
 
-    if (commands.find(command => command.name == commandName)) {
+    if (CommandsController.getCommands().find(command => command.name == commandName)) {
         return {content: 'This command already exists!', ephemeral: true };
     }
 
@@ -17,12 +18,12 @@ export async function addCommand(commandName, songLink) {
         .setDescription('Play a very specific song!')
         .setDefaultMemberPermissions(PermissionFlagsBits.Connect)
         .toJSON()),
-        'function': (interaction) => insert(interaction.member.voice?.channel, interaction.options.getString('link')),
+        'function': (interaction) => insert(interaction.member.voice?.channel, songLink),
     }
 
-    commands.push(command);
+    CommandsController.getCommands().push(command);
     if (! (await registerApplicationCommands())) {
-        commands.pop();
+        CommandsController.getCommands().pop();
         return {content: 'Failed to add command ' + commandName + '!', ephemeral: true };
     }
 

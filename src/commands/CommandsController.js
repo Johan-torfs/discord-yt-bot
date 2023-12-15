@@ -33,7 +33,12 @@ function getCommands() {
     return commands;
 }
 
+function setCommands(newCommands) {
+    commands = newCommands;
+}
+
 export default CommandsController = {
     start,
     getCommands,
+    setCommands,
 };
