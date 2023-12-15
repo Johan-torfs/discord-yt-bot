@@ -12,6 +12,8 @@ import { queue } from './functions/queue.js';
 import { remove } from './functions/remove.js';
 import { replay } from './functions/replay.js';
 import { build } from './functions/build.js';
+import { pause } from './functions/pause.js';
+import { resume } from './functions/resume.js';
 
 export const baseCommands = [
     {
@@ -82,6 +84,22 @@ export const baseCommands = [
                 .setRequired(true)
         ).toJSON()),
         'function': (interaction) => play(interaction.member.voice?.channel, interaction.options.getString('link')),
+    },
+    {
+        ...(new SlashCommandBuilder()
+        .setName('pause')
+        .setDescription('Pause the music')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Connect)
+        .toJSON()),
+        'function': (interaction) => pause(interaction.member.voice?.channel),
+    },
+    {
+        ...(new SlashCommandBuilder()
+        .setName('resume')
+        .setDescription('Resume the music')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Connect)
+        .toJSON()),
+        'function': (interaction) => resume(interaction.member.voice?.channel),
     },
     {
         ...(new SlashCommandBuilder()

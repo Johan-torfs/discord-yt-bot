@@ -84,6 +84,16 @@ function remove(id) {
     return {reply: { content: 'Removed ' + title + '!' }};
 }
 
+function pause() {
+    player.pause();
+    return {reply: { content: 'Paused!' }};
+}
+
+function resume() {
+    player.unpause();
+    return {reply: { content: 'Resumed!' }};
+}
+
 // Helper functions
 async function playNext(skip = true) {
     if (skip) queueArray.shift();
@@ -176,7 +186,9 @@ const SongController = {
     skip,
     stop,
     showQueue,
-    remove
+    remove,
+    pause,
+    resume
 };
 
 export default SongController;
