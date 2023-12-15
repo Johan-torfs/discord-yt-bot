@@ -82,6 +82,11 @@ function deactivate() {
     active = false;
 }
 
+function connectPlayer(player) {
+    if (!getConnection()) return;
+    getConnection().subscribe(player);
+}
+
 const ChannelController = {
     checkAndJoin,
     joinChannel,
@@ -89,6 +94,7 @@ const ChannelController = {
     getConnection,
     activate,
     deactivate,
+    connectPlayer,
 }
 
 export default ChannelController;
