@@ -40,7 +40,9 @@ function startTimeout() {
         if (!active) {
             setTimeout(() => {
                 if (!active) {
-                    getConnection().destroy();
+                    if (getConnection()) {
+                        getConnection().destroy();
+                    }
                     activeChannel = null;
                     active = false;
                 } else {
