@@ -46,7 +46,7 @@ function startTimeout() {
                 } else {
                     startTimeout();
                 }
-            }, 1000 * 20);
+            }, 1000 * 60 * 5);
         } else {
             startTimeout();
         }

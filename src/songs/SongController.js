@@ -12,10 +12,14 @@ async function play(songLink, insert = false, skip = false) {
     createPlayer();
     
     const { result, success } = await getSongInfo(songLink);
-    if (!success) return result;
+    if (!success) return {reply: result, success };
 
     const { songInfo, embed } = result;
 
+    return await playSongInfo(songInfo, embed, insert, skip);
+}
+
+async function playSongInfo(songInfo, embed, insert = false, skip = false) {
     let stream;
     try {
         stream = await playdl.stream_from_info(songInfo);
@@ -121,15 +125,50 @@ function createPlayer() {
 }
 
 async function getSongInfo(link) {
-    var songInfo;
-    try {
-        songInfo = await playdl.video_info(link);
-    } catch (error) {
-        return {result: { content: 'Failed to get link!', ephemeral: true }, success: false};
-    }
-    const embed = createEmbedMessage(songInfo.video_details);
+    if (!link) return {result: { content: 'No link provided!', ephemeral: true }, success: false};
 
-    return {result: { songInfo, embed }, success: true};
+    const regexYT = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(.+)/;
+    const regexSP = /(?:https?:\/\/)?(?:open\.)?(?:spotify\.com)\/(?:track)\/(.+)/;
+    var songInfo;
+    if (regexYT.test(link)) {
+        try {
+            songInfo = await playdl.video_info(link);
+        } catch (error) {
+            return {result: { content: 'Failed to get link!', ephemeral: true }, success: false};
+        }
+        const embed = createEmbedMessage(songInfo.video_details);
+
+        return {result: { songInfo, embed }, success: true};
+    } else if (regexSP.test(link)) {
+        if (playdl.is_expired()) {
+            await playdl.refreshToken();
+        }
+
+        try {
+            songInfo = await playdl.spotify(link, { limit: 1 });
+        } catch (error) {
+            return {result: { content: 'Failed to get link!', ephemeral: true }, success: false};
+        }
+        songInfo = songInfo[0];
+        const embed = createEmbedMessage(songInfo.video_details);
+
+        return {result: { songInfo, embed }, success: true};
+    } else {
+        try {
+            songInfo = await playdl.search(link, {
+                limit: 1
+            });
+            songInfo = songInfo[0].url;
+            songInfo = await playdl.video_info(songInfo);
+        } catch (error) {
+            return {result: { content: 'Failed to get link!', ephemeral: true }, success: false};
+        }
+        const embed = createEmbedMessage(songInfo.video_details);
+
+        return {result: { songInfo, embed }, success: true};
+    }
+
+    
 }
 
 const SongController = {
