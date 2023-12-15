@@ -1,6 +1,6 @@
 import { Client, REST, GatewayIntentBits } from 'discord.js';
-
-import { registerApplicationCommands, startInteractionListener } from './commands.js';
+import CommandsController from './commands/CommandsController.js';
+import InteractionController from './interactions/InteractionController.js';
 
 //Import ENV variables from .env file
 import 'dotenv/config';
@@ -24,7 +24,7 @@ const client = new Client({
 // Listen for the ready event
 client.once('ready', () => console.log('Ready!'));
 
-registerApplicationCommands(rest, CLIENT_ID, GUILD_ID);
-startInteractionListener(client);
+CommandsController.start(rest, CLIENT_ID, GUILD_ID);
+InteractionController.start(client);
 
 client.login(TOKEN);
