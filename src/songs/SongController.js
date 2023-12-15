@@ -118,7 +118,10 @@ function createEmbedMessage(details) {
 
 
 function createPlayer() {
-    if (player) return;
+    if (player) {
+        ChannelController.connectPlayer(player);
+        return;
+    };
 
     player = createAudioPlayer();
 
@@ -131,7 +134,7 @@ function createPlayer() {
         playNext();
     });
 
-    ChannelController.getConnection().subscribe(player);
+    ChannelController.connectPlayer(player);   
 }
 
 async function getSongInfo(link) {
