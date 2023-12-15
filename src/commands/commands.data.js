@@ -1,18 +1,22 @@
-import { Routes, ChannelType, SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
+import { ChannelType, SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
 
-import {join, leave} from './join.js';
-import {playCommand, skipCommand, stopCommand, queueCommand, removeCommand, replayCommand, customSongCommand, insertCommand} from './play.js';
-import { Interaction } from './interactionReplyHandler.js';
+import { addCommand } from './functions/addcommand.js';
+import { removeCommand } from './functions/removecommand.js';
+import { join } from './functions/join.js';
+import { leave } from './functions/leave.js';
+import { play } from './functions/play.js';
+import { insert } from './functions/insert.js';
+import { skip } from './functions/skip.js';
+import { stop } from './functions/stop.js';
+import { queue } from './functions/queue.js';
+import { remove } from './functions/remove.js';
+import { replay } from './functions/replay.js';
+import { build } from './functions/build.js';
 
-var REST = null;
-var CLIENT_ID = null;
-var GUILD_ID = null;
-
-// JSON with available commands and their functions
-const baseCommands = [
+export const baseCommands = [
     {
         ...(new SlashCommandBuilder()
-        .setName('command')
+        .setName('addcommand')
         .setDescription('Add a command to play a specific song')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .addStringOption((option) =>
@@ -27,11 +31,12 @@ const baseCommands = [
                 .setDescription('Link to the song')
                 .setRequired(true)
         ).toJSON()),
-        'function': addCommandToCommandList,
+        'function': (interaction) => addCommand(interaction.options.getString('command'), interaction.options.getString('link')),
+        ephermeral: true,
     },
     {
         ...(new SlashCommandBuilder()
-        .setName('commandremove')
+        .setName('removecommand')
         .setDescription('Remove a command')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .addStringOption((option) =>
@@ -40,7 +45,8 @@ const baseCommands = [
                 .setDescription('Name of the command')
                 .setRequired(true)
         ).toJSON()),
-        'function': removeCommandFromCommandList,
+        'function': (interaction) => removeCommand(interaction.options.getString('command')),
+        ephermeral: true,
     },
     {
             ...(new SlashCommandBuilder()
@@ -54,7 +60,7 @@ const baseCommands = [
                     .setRequired(true)
                     .addChannelTypes(ChannelType.GuildVoice)
             ).toJSON()),
-            'function': join,
+            'function': (interaction) => join(interaction.options.getChannel('channel')),
     },
     {
         ...(new SlashCommandBuilder()
@@ -62,7 +68,7 @@ const baseCommands = [
         .setDescription('Leave the voice channel')
         .setDefaultMemberPermissions(PermissionFlagsBits.Connect)
         .toJSON()),
-        'function': leave,
+        'function': (interaction) => leave(),
     },
     {
         ...(new SlashCommandBuilder()
@@ -75,7 +81,7 @@ const baseCommands = [
                 .setDescription('The song to play')
                 .setRequired(true)
         ).toJSON()),
-        'function': playCommand,
+        'function': (interaction) => play(interaction.member.voice?.channel, interaction.options.getString('link')),
     },
     {
         ...(new SlashCommandBuilder()
@@ -88,7 +94,7 @@ const baseCommands = [
                 .setDescription('The song to play')
                 .setRequired(true)
         ).toJSON()),
-        'function': insertCommand,
+        'function': (interaction) => insert(interaction.member.voice?.channel, interaction.options.getString('link')),
     },
     {
         ...(new SlashCommandBuilder()
@@ -96,7 +102,7 @@ const baseCommands = [
         .setDescription('Skip the current song')
         .setDefaultMemberPermissions(PermissionFlagsBits.Connect)
         .toJSON()),
-        'function': skipCommand,
+        'function': (interaction) => skip(interaction.member.voice?.channel),
     },
     {
         ...(new SlashCommandBuilder()
@@ -104,7 +110,7 @@ const baseCommands = [
         .setDescription('Stop all songs and empty queue')
         .setDefaultMemberPermissions(PermissionFlagsBits.Connect)
         .toJSON()),
-        'function': stopCommand,
+        'function': (interaction) => stop(interaction.member.voice?.channel),
     },
     {
         ...(new SlashCommandBuilder()
@@ -112,7 +118,7 @@ const baseCommands = [
         .setDescription('Show all songs in queue')
         .setDefaultMemberPermissions(PermissionFlagsBits.Connect)
         .toJSON()),
-        'function': queueCommand,
+        'function': (interaction) => queue(interaction.member.voice?.channel),
     },
     {
         ...(new SlashCommandBuilder()
@@ -125,12 +131,12 @@ const baseCommands = [
                 .setDescription('The number of the song to remove')
                 .setRequired(true)
         ).toJSON()),
-        'function': removeCommand,
+        'function': (interaction) => remove(interaction.member.voice?.channel, interaction.options.getInteger('id'))
     },
     {
         name: 'replay',
         type: 3,
-        'function': replayCommand,
+        'function': (interaction) => replay(interaction.member.voice?.channel, interaction.targetMessage.embeds),
     },
     {
         ...(new SlashCommandBuilder()
@@ -138,81 +144,6 @@ const baseCommands = [
         .setDescription('Play a very specific song!')
         .setDefaultMemberPermissions(PermissionFlagsBits.Connect)
         .toJSON()),
-        'function': (interaction) => customSongCommand(interaction, 'https://youtu.be/j8068ZrwicQ?si=R55xb5vqzLyigdZL'),
+        'function': (interaction) => build(interaction.member.voice?.channel, 'https://youtu.be/j8068ZrwicQ?si=R55xb5vqzLyigdZL'),
     },
-];
-
-var commands = [...baseCommands];
-
-async function registerApplicationCommands(rest, clientId, guildId) {   
-    REST = rest;
-    CLIENT_ID = clientId;
-    GUILD_ID = guildId;
-
-    try {
-        await rest.put(
-            Routes.applicationGuildCommands(clientId, guildId),
-            { body: commands },
-        );
-    } catch (error) {
-        console.log(error);
-    }
-}
-
-async function startInteractionListener(client) {
-    client.on('interactionCreate', (interaction) => {
-        const command = commands.find(command => command.name == interaction.commandName);
-        if (command) command.function(interaction);
-    });
-}
-
-async function addCommandToCommandList(interaction) {
-    const interactionHandler = new Interaction(interaction);
-    const commandName = interaction.options.getString('command');
-    const songLink = interaction.options.getString('link');
-    const command = {
-        ...(new SlashCommandBuilder()
-        .setName(commandName)
-        .setDescription('Play a very specific song!')
-        .setDefaultMemberPermissions(PermissionFlagsBits.Connect)
-        .toJSON()),
-        'function': (interaction) => customSongCommand(interaction, songLink),
-    }
-    try {
-        await REST.put(
-            Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
-            { body: [...commands, command] },
-        );
-        interactionHandler.interactionReply(interaction, {content: 'Command added!', ephemeral: true });
-    } catch (error) {
-        interactionHandler.interactionReply(interaction, {content: 'Something went wrong!', ephemeral: true });
-        console.log(error);
-        return;
-    }
-    commands.push(command);
-}
-
-async function removeCommandFromCommandList(interaction) {
-    const interactionHandler = new Interaction(interaction);
-    const commandName = interaction.options.getString('command');
-
-    if (baseCommands.find(command => command.name == commandName)) {
-        interactionHandler.interactionReply(interaction, {content: 'This command is not removable!', ephemeral: true });
-        return;
-    }
-
-    try {
-        await REST.put(
-            Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
-            { body: commands.filter(command => command.name != commandName) },
-        );
-        interactionHandler.interactionReply(interaction, {content: 'Command removed!', ephemeral: true });
-    } catch (error) {
-        interactionHandler.interactionReply(interaction, {content: 'Something went wrong!', ephemeral: true });
-        console.log(error);
-        return;
-    }
-    commands = commands.filter(command => command.name != commandName);
-}
-
-export { registerApplicationCommands, startInteractionListener };
+]
