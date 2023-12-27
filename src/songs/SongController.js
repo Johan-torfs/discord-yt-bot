@@ -28,13 +28,6 @@ async function playlist(link) {
         const video = playListInfo.videos[i];
 
         await play(video.url);
-
-        // const { result, success } = await getSongInfo(video.url);
-        // if (!success) return {reply: result, success };
-
-        // const { songInfo, embed } = result;
-
-        // await playSongInfo(songInfo, embed);
     }
 
     return {reply: { content: 'Added playlist!' }, success: true };
@@ -166,7 +159,9 @@ async function getSongInfo(link) {
     var songInfo;
     if (regexYT.test(link)) {
         try {
-            songInfo = await playdl.video_info(link);
+            songInfo = await playdl.video_info(link).catch((error) => {
+                console.log(error);
+            });
         } catch (error) {
             return {result: { content: 'Failed to get link!', ephemeral: true }, success: false};
         }
