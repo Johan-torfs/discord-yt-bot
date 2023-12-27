@@ -5,6 +5,7 @@ import { removeCommand } from './functions/removecommand.js';
 import { join } from './functions/join.js';
 import { leave } from './functions/leave.js';
 import { play } from './functions/play.js';
+import { playlist } from './functions/playlist.js';
 import { insert } from './functions/insert.js';
 import { skip } from './functions/skip.js';
 import { stop } from './functions/stop.js';
@@ -84,6 +85,19 @@ export const baseCommands = [
                 .setRequired(true)
         ).toJSON()),
         'function': (interaction) => play(interaction.member.voice?.channel, interaction.options.getString('link')),
+    },
+    {
+        ...(new SlashCommandBuilder()
+        .setName('playlist')
+        .setDescription('Add a youtube playlist to the queue')
+        .setDefaultMemberPermissions(PermissionFlagsBits.Connect)
+        .addStringOption((option) =>
+            option
+                .setName('link')
+                .setDescription('Link to the playlist')
+                .setRequired(true)
+        ).toJSON()),
+        'function': (interaction) => playlist(interaction.member.voice?.channel, interaction.options.getString('link')),
     },
     {
         ...(new SlashCommandBuilder()
