@@ -159,9 +159,7 @@ async function getSongInfo(link) {
     var songInfo;
     if (regexYT.test(link)) {
         try {
-            songInfo = await playdl.video_info(link).catch((error) => {
-                console.log(error);
-            });
+            songInfo = await playdl.video_info(link);
         } catch (error) {
             return {result: { content: 'Failed to get link!', ephemeral: true }, success: false};
         }
