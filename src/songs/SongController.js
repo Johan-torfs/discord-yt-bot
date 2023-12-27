@@ -19,6 +19,27 @@ async function play(songLink, insert = false, skip = false) {
     return await playSongInfo(songInfo, embed, insert, skip);
 }
 
+async function playlist(link) {
+    const { result, success } = await getPlayListInfo(link);
+    if (!success) return {reply: result, success };
+
+    const { playListInfo } = result;
+    for (let i = 0; i < playListInfo.videos.length; i++) {
+        const video = playListInfo.videos[i];
+
+        await play(video.url);
+
+        // const { result, success } = await getSongInfo(video.url);
+        // if (!success) return {reply: result, success };
+
+        // const { songInfo, embed } = result;
+
+        // await playSongInfo(songInfo, embed);
+    }
+
+    return {reply: { content: 'Added playlist!' }, success: true };
+}
+
 async function playSongInfo(songInfo, embed, insert = false, skip = false) {
     let stream;
     try {
@@ -180,12 +201,29 @@ async function getSongInfo(link) {
 
         return {result: { songInfo, embed }, success: true};
     }
+}
 
-    
+async function getPlayListInfo(link) {
+    if (!link) return {result: { content: 'No link provided!', ephemeral: true }, success: false};
+
+    const regexYT = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:playlist\?list=)?(.+)/;
+    var playListInfo;
+    if (regexYT.test(link)) {
+        try {
+            playListInfo = await playdl.playlist_info(link);
+        } catch (error) {
+            return {result: { content: 'Failed to get link!', ephemeral: true }, success: false};
+        }
+
+        return {result: { playListInfo }, success: true};
+    } else {
+        return {result: { content: 'Invalid link!', ephemeral: true }, success: false};
+    }
 }
 
 const SongController = {
     play,
+    playlist,
     skip,
     stop,
     showQueue,
